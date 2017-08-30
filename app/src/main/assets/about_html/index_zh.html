@@ -28,15 +28,51 @@
             text-decoration: none;
         }
 
+
+
+
+
+
+
     </style>
 </head>
 
 <script type="text/javascript">
     function changeVersionInfo(version, time, gitCommit) {
+
+        var xmlhttp;
+        if (window.XMLHttpRequest)
+        {
+            //  IE7+, Firefox, Chrome, Opera, Safari 浏览器执行代码
+            xmlhttp=new XMLHttpRequest();
+        }
+        else
+        {
+            // IE6, IE5 浏览器执行代码
+            xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+        }
+        xmlhttp.onreadystatechange=function()
+        {
+            if (xmlhttp.readyState==4 && xmlhttp.status==200)
+            {
+                  jsonData = JSON.parse(xmlhttp.responseText);
+                  document.getElementById("latest_commit").innerHTML = "Latest Commit: " + jsonData.commit.message + " By " + jsonData.commit.author.name
+                    + "(" + jsonData.commit.author.email + ") On " + jsonData.commit.author.date;
+            }
+        }
+        xmlhttp.open("GET", "https://api.github.com/repos/iTXTech/Daedalus/commits/" + gitCommit, true);
+        xmlhttp.send();
+
         document.getElementById("version").innerHTML = "版本：" + version;
         document.getElementById("build_time").innerHTML = "构建时间：" + new Date(new Number(time)).toLocaleString();
         document.getElementById("git_commit").innerHTML = "Git commit：<a href='https://github.com/iTXTech/Daedalus/commit/" + gitCommit + "'>" + gitCommit + "</a>";
     }
+
+
+
+
+
+
 </script>
 
 <body>
@@ -49,6 +85,7 @@
 <div id="version" style="font-size: 10px; color: gray;">Version: Unknown</div>
 <div id="build_time" style="font-size: 10px; color: gray;">Build time: Unknown</div>
 <div id="git_commit" style="font-size: 10px; color: gray;">Git commit: Unknown</div>
+<div id="latest_commit" style="font-size: 10px; color: gray;">Latest Commit: Unknown</div>
 <br>
 <img width="185" height="55" src="cutedns_logo.png">
 <br>
@@ -65,9 +102,11 @@
 <div style="font-size: 12px; color: #FF4081">AIXYZ DNS 仅限用于学术目的！</div>
 <div style="font-size: 12px; color: gray;">使用者必须遵守当地法律法规。</div>
 <br>
-<div style="font-size: 12px; color: gray;">Copyright (C) 2017 by iTXTech <a href="mailto:admin@itxtech.org">admin@itxtech.org</a>
+<div style="font-size: 12px; color: gray;">Copyright (C) 2017 by iTXTech <a
+        href="mailto:admin@itxtech.org">admin@itxtech.org</a>
 </div>
-<div style="font-size: 12px; color: gray;">Copyright (C) 2017 by PeratX <a href="mailto:peratx@itxtech.org">peratx@itxtech.org</a>
+<div style="font-size: 12px; color: gray;">Copyright (C) 2017 by PeratX <a
+        href="mailto:peratx@itxtech.org">peratx@itxtech.org</a>
 </div>
 <br>
 <br>
@@ -94,7 +133,8 @@
         href="https://github.com/MrFuFuFu/ClearEditText">APL 2.0</a><br>
     <a href="https://github.com/julian-klode/dns66">DNS66</a>: <a
         href="https://github.com/julian-klode/dns66/blob/master/COPYING">GPLv3</a><br>
-    <a href="https://github.com/kaitoy/pcap4j">Pcap4J</a>: <a href="https://github.com/kaitoy/pcap4j">MIT</a><br>
+    <a href="https://github.com/kaitoy/pcap4j">Pcap4J</a>: <a
+        href="https://github.com/kaitoy/pcap4j">MIT</a><br>
     <a href="https://github.com/rtreffer/minidns">MiniDNS</a>: <a
         href="https://github.com/rtreffer/minidns/blob/master/LICENCE_LGPL2.1">LGPLv2.1</a><br>
     <a href="https://github.com/google/gson">Gson</a>: <a
