@@ -20,19 +20,12 @@ import android.view.MenuItem;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.TextView;
-
 import org.itxtech.daedalus.BuildConfig;
 import org.itxtech.daedalus.Daedalus;
 import org.itxtech.daedalus.R;
-import org.itxtech.daedalus.fragment.AboutFragment;
-import org.itxtech.daedalus.fragment.DNSServersFragment;
-import org.itxtech.daedalus.fragment.DNSTestFragment;
-import org.itxtech.daedalus.fragment.HomeFragment;
-import org.itxtech.daedalus.fragment.LogFragment;
-import org.itxtech.daedalus.fragment.RulesFragment;
-import org.itxtech.daedalus.fragment.SettingsFragment;
-import org.itxtech.daedalus.fragment.ToolbarFragment;
+import org.itxtech.daedalus.fragment.*;
 import org.itxtech.daedalus.service.DaedalusVpnService;
+import org.itxtech.daedalus.util.Logger;
 import org.itxtech.daedalus.util.server.DNSServerHelper;
 
 /**
@@ -100,10 +93,17 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         Log.d(TAG, "onCreate");
     }
 
-    private void switchFragment(ToolbarFragment fragment) {
-        FragmentManager fm = getFragmentManager();
-        fm.beginTransaction().replace(R.id.id_content, fragment).commit();
-        currentFragment = fragment;
+    private void switchFragment(Class fragmentClass) {
+        if (currentFragment == null || fragmentClass != currentFragment.getClass()) {
+            try {
+                ToolbarFragment fragment = (ToolbarFragment) fragmentClass.newInstance();
+                FragmentManager fm = getFragmentManager();
+                fm.beginTransaction().replace(R.id.id_content, fragment).commit();
+                currentFragment = fragment;
+            } catch (Exception e) {
+                Logger.logException(e);
+            }
+        }
     }
 
     @Override
@@ -112,7 +112,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
         } else if (!(currentFragment instanceof HomeFragment)) {
-            switchFragment(new HomeFragment());
+            switchFragment(HomeFragment.class);
         } else {
             super.onBackPressed();
         }
@@ -173,7 +173,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         }
     }
 
-    @Override
     public void onActivityResult(int request, int result, Intent data) {
         if (result == Activity.RESULT_OK) {
             DaedalusVpnService.primaryServer = DNSServerHelper.getAddressById(DNSServerHelper.getPrimary());
@@ -209,29 +208,29 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         int fragment = intent.getIntExtra(LAUNCH_FRAGMENT, FRAGMENT_NONE);
         switch (fragment) {
             case FRAGMENT_ABOUT:
-                switchFragment(new AboutFragment());
+                switchFragment(AboutFragment.class);
                 break;
             case FRAGMENT_DNS_SERVERS:
-                switchFragment(new DNSServersFragment());
+                switchFragment(DNSServersFragment.class);
                 break;
             case FRAGMENT_DNS_TEST:
-                switchFragment(new DNSTestFragment());
+                switchFragment(DNSTestFragment.class);
                 break;
             case FRAGMENT_HOME:
-                switchFragment(new HomeFragment());
+                switchFragment(HomeFragment.class);
                 break;
             case FRAGMENT_RULES:
-                switchFragment(new RulesFragment());
+                switchFragment(RulesFragment.class);
                 break;
             case FRAGMENT_SETTINGS:
-                switchFragment(new SettingsFragment());
+                switchFragment(SettingsFragment.class);
                 break;
             case FRAGMENT_LOG:
-                switchFragment(new LogFragment());
+                switchFragment(LogFragment.class);
                 break;
         }
         if (currentFragment == null) {
-            switchFragment(new HomeFragment());
+            switchFragment(HomeFragment.class);
         }
     }
 
@@ -242,42 +241,28 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         switch (id) {
             case R.id.nav_about:
-                if (!(currentFragment == null || currentFragment instanceof AboutFragment)) {
-                    switchFragment(new AboutFragment());
-                }
+                switchFragment(AboutFragment.class);
                 break;
             case R.id.nav_dns_server:
-                if (!(currentFragment == null || currentFragment instanceof DNSServersFragment)) {
-                    switchFragment(new DNSServersFragment());
-                }
+                switchFragment(DNSServersFragment.class);
                 break;
             case R.id.nav_dns_test:
-                if (!(currentFragment == null || currentFragment instanceof DNSTestFragment)) {
-                    switchFragment(new DNSTestFragment());
-                }
+                switchFragment(DNSTestFragment.class);
                 break;
             case R.id.nav_github:
                 Daedalus.openUri("https://github.com/iTXTech/Daedalus");
                 break;
             case R.id.nav_home:
-                if (!(currentFragment == null || currentFragment instanceof HomeFragment)) {
-                    switchFragment(new HomeFragment());
-                }
+                switchFragment(HomeFragment.class);
                 break;
             case R.id.nav_rules:
-                if (!(currentFragment == null || currentFragment instanceof RulesFragment)) {
-                    switchFragment(new RulesFragment());
-                }
+                switchFragment(RulesFragment.class);
                 break;
             case R.id.nav_settings:
-                if (!(currentFragment == null || currentFragment instanceof SettingsFragment)) {
-                    switchFragment(new SettingsFragment());
-                }
+                switchFragment(SettingsFragment.class);
                 break;
             case R.id.nav_log:
-                if (!(currentFragment == null || currentFragment instanceof LogFragment)) {
-                    switchFragment(new LogFragment());
-                }
+                switchFragment(LogFragment.class);
                 break;
         }
 

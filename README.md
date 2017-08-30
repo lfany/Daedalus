@@ -1,14 +1,15 @@
 iTXTech Daedalus
 ===============
-__声明：本程序并非所谓翻墙软件，本程序是一个工具软件用于修改DNS服务器和解析规则。近期大量SNI服务器出问题，大规模封锁可用的服务器导致部分网站不可用。这都是本程序所无法控制的，多尝试使用一些规则找到适合自己地区的服务器才是不错的解决方案。__
-
 __No root required Android DNS modifier and hosts/DNSMasq resolver.__
 
+[![Donate](https://img.shields.io/badge/alipay-donate-yellow.svg)](https://qr.alipay.com/a6x07022gffiehykicipv1a)
 [![Build Status](https://travis-ci.org/iTXTech/Daedalus.svg?branch=master)](https://travis-ci.org/iTXTech/Daedalus)
 
 Installation
 -------------
 __[Releases](https://github.com/iTXTech/Daedalus/releases)__
+
+__[Beta Test Early Access](https://play.google.com/apps/testing/org.itxtech.daedalus)__
 
 [<img alt='Get it on Google Play'
       src='https://play.google.com/intl/en_us/badges/images/generic/en_badge_web_generic.png'
@@ -28,6 +29,7 @@ Features:
 * Functional under data connection
 * DNS over TCP
 * A tester for DNS servers
+* IPv6 support (including Rules!)
 * Custom DNS server
 * Custom hosts and DNSMasq configuration
 * EXTREME LOW power consume
@@ -38,17 +40,18 @@ __Users must comply with local laws and regulations.__<br>
 
 DNS Server Providers
 -------------
-* __CuteDNS__ - *Restart service recently.*
+* __CuteDNS__
 * __[Pure DNS](http://puredns.cn/)__ - *I DO NOT KNOW HOW TO DESCRIBE~~~*
 * __[AIXYZ DNS](https://aixyz.com/)__ - __*For academic purposes only.*__
+* __[FUN DNS](http://fundns.cn)__ - *The Most Pure Domain Name Resolution Service*
 
 Rule Providers
 -------------
 * __[hosts](https://github.com/racaljk/hosts)__ by *[Cthulhu](https://github.com/racaljk)* - [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh)
-* __[google-hosts](https://github.com/fengixng/google-hosts)__ by *[fengixng](https://github.com/fengixng)* - None
 * __[hosts](https://github.com/sy618/hosts)__ by *[sy618](https://github.com/sy618)* - [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/deed.zh)
 * __[connector](https://git.oschina.net/lengers/connector)__ by *[lankes](https://git.oschina.net/lengers)* - [GPLv3](https://git.oschina.net/lengers/connector/blob/master/LICENSE)
 * __[yhosts](https://github.com/vokins/yhosts)__ by *[vokins](https://github.com/vokins)* - [CC BY-NC-ND 4.0](https://creativecommons.org/licenses/by-nc-nd/4.0/)
+* __[2017hosts](https://github.com/wangchunming/2017hosts)__ by *[wangchunming](https://github.com/wangchunming)* - None
 
 Requirements
 -------------

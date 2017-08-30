@@ -12,19 +12,17 @@ import android.net.Uri;
 import android.os.Build;
 import android.preference.PreferenceManager;
 import android.util.Log;
-
 import com.google.firebase.crash.FirebaseCrash;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonParseException;
 import com.google.gson.stream.JsonReader;
-
 import org.itxtech.daedalus.activity.MainActivity;
 import org.itxtech.daedalus.service.DaedalusVpnService;
 import org.itxtech.daedalus.util.Configurations;
 import org.itxtech.daedalus.util.Logger;
 import org.itxtech.daedalus.util.Rule;
-import org.itxtech.daedalus.util.RulesResolver;
+import org.itxtech.daedalus.util.RuleResolver;
 import org.itxtech.daedalus.util.server.DNSServer;
 
 import java.io.File;
@@ -56,6 +54,7 @@ public class Daedalus extends Application {
     private static final String SHORTCUT_ID_ACTIVATE = "shortcut_activate";
 
     public static final List<DNSServer> DNS_SERVERS = new ArrayList<DNSServer>() {{
+        add(new DNSServer("119.23.248.241", R.string.server_fundns));
         add(new DNSServer("115.159.220.214", R.string.server_puredns_east_china));
         add(new DNSServer("123.207.137.88", R.string.server_puredns_north_china));
         add(new DNSServer("115.159.146.99", R.string.server_aixyz_east_china));
@@ -67,14 +66,14 @@ public class Daedalus extends Application {
         //Build-in Hosts rule providers
         add(new Rule("racaljk/hosts", "racaljk.hosts", Rule.TYPE_HOSTS,
                 "https://coding.net/u/scaffrey/p/hosts/git/raw/master/hosts", false));
-        add(new Rule("fengixng/google-hosts", "fengixng.hosts", Rule.TYPE_HOSTS,
-                "https://raw.githubusercontent.com/fengixng/google-hosts/master/hosts", false));
         add(new Rule("sy618/hosts", "sy618.hosts", Rule.TYPE_HOSTS,
                 "https://raw.githubusercontent.com/sy618/hosts/master/ADFQ", false));
         add(new Rule("vokins/yhosts", "vokins.hosts", Rule.TYPE_HOSTS,
                 "https://raw.githubusercontent.com/vokins/yhosts/master/hosts", false));
         add(new Rule("lengers/connector", "connector.hosts", Rule.TYPE_HOSTS,
                 "https://git.oschina.net/lengers/connector/raw/master/hosts", false));
+        add(new Rule("wangchunming/2017hosts", "2017.hosts", Rule.TYPE_HOSTS,
+                "https://raw.githubusercontent.com/wangchunming/2017hosts/master/hosts-pc", false));
         //Build-in DNSMasq rule providers
         add(new Rule("sy618/hosts/dnsad", "dnsad.dnsmasq", Rule.TYPE_DNAMASQ,
                 "https://raw.githubusercontent.com/sy618/hosts/master/dnsmasq/dnsad", false));
@@ -92,7 +91,8 @@ public class Daedalus extends Application {
 
     public static Configurations configurations;
 
-    public static String rulesPath = null;
+    public static String rulePath = null;
+    public static String logPath = null;
     private static String configPath = null;
 
     private static Daedalus instance = null;
@@ -107,10 +107,20 @@ public class Daedalus extends Application {
 
         Logger.init();
 
-        mResolver = new Thread(new RulesResolver());
+        mResolver = new Thread(new RuleResolver());
         mResolver.start();
 
         initData();
+    }
+
+    private void initDirectory(String dir){
+        File directory = new File(dir);
+        if (!directory.isDirectory()) {
+            Logger.warning(dir + " is not a directory. Delete result: " + String.valueOf(directory.delete()));
+        }
+        if (!directory.exists()) {
+            Logger.debug(dir + " does not exist. Create result: " + String.valueOf(directory.mkdirs()));
+        }
     }
 
     private void initData() {
@@ -118,16 +128,12 @@ public class Daedalus extends Application {
         prefs = PreferenceManager.getDefaultSharedPreferences(this);
 
         if (getExternalFilesDir(null) != null) {
-            rulesPath = getExternalFilesDir(null).getPath() + "/rules/";
+            rulePath = getExternalFilesDir(null).getPath() + "/rules/";
+            logPath = getExternalFilesDir(null).getPath() + "/logs/";
             configPath = getExternalFilesDir(null).getPath() + "/config.json";
 
-            File configDir = new File(rulesPath);
-            if (!configDir.isDirectory()) {
-                Logger.warning("Configuration directory is not a directory. Delete result: " + String.valueOf(configDir.delete()));
-            }
-            if (!configDir.exists()) {
-                Logger.debug("Configuration directory does not exist. Create result: " + String.valueOf(configDir.mkdirs()));
-            }
+            initDirectory(rulePath);
+            initDirectory(logPath);
         }
 
         if (configPath != null) {
@@ -150,7 +156,7 @@ public class Daedalus extends Application {
             if (usingRules != null && usingRules.size() > 0) {
                 for (Rule rule : usingRules) {
                     if (rule.isUsing()) {
-                        pendingLoad.add(rulesPath + rule.getFileName());
+                        pendingLoad.add(rulePath + rule.getFileName());
                     }
                 }
                 if (pendingLoad.size() > 0) {
@@ -158,13 +164,15 @@ public class Daedalus extends Application {
                     pendingLoad.toArray(arr);
                     switch (usingRules.get(0).getType()) {
                         case Rule.TYPE_HOSTS:
-                            RulesResolver.startLoadHosts(arr);
+                            RuleResolver.startLoadHosts(arr);
                             break;
                         case Rule.TYPE_DNAMASQ:
-                            RulesResolver.startLoadDnsmasq(arr);
+                            RuleResolver.startLoadDnsmasq(arr);
                             break;
                     }
                 }
+            } else {
+                RuleResolver.clear();
             }
         }
     }
@@ -187,9 +195,9 @@ public class Daedalus extends Application {
 
         instance = null;
         prefs = null;
-        RulesResolver.shutdown();
+        RuleResolver.shutdown();
         mResolver.interrupt();
-        RulesResolver.clear();
+        RuleResolver.clear();
         mResolver = null;
         Logger.shutdown();
     }
