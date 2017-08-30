@@ -77,7 +77,7 @@ public class AboutFragment extends ToolbarFragment {
 
     @Override
     public void checkStatus() {
-        menu.findItem(R.id.nav_about).setChecked(true);
+        menu.findItem(R.id.nav_about).setChecked(true).setEnabled(false);
         toolbar.setTitle(R.string.action_about);
     }
 
