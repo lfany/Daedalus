@@ -34,8 +34,8 @@
 <script type="text/javascript">
     function changeVersionInfo(version, time, gitCommit) {
         document.getElementById("version").innerHTML = "Version: " + version;
-        document.getElementById("build_time").innerHTML = "Build time: " + time;
-        document.getElementById("git_commit").innerHTML = "Git commit: " + gitCommit;
+        document.getElementById("build_time").innerHTML = "Build time: " + new Date(new Number(time)).toLocaleString();
+        document.getElementById("git_commit").innerHTML = "Git commit：<a href='https://github.com/iTXTech/Daedalus/commit/" + gitCommit + "'>" + gitCommit + "</a>";
     }
 </script>
 
