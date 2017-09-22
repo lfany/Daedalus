@@ -11,19 +11,17 @@ import de.measite.minidns.DNSMessage;
 import de.measite.minidns.Record;
 import de.measite.minidns.record.A;
 import de.measite.minidns.record.AAAA;
+import org.itxtech.daedalus.Daedalus;
 import org.itxtech.daedalus.service.DaedalusVpnService;
 import org.itxtech.daedalus.util.Logger;
 import org.itxtech.daedalus.util.RuleResolver;
 import org.itxtech.daedalus.util.server.DNSServerHelper;
 import org.pcap4j.packet.*;
-import org.pcap4j.packet.factory.PacketFactoryPropertiesLoader;
-import org.pcap4j.util.PropertiesLoader;
 
 import java.io.FileDescriptor;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.net.*;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -48,11 +46,6 @@ public class UdpProvider extends Provider {
     FileDescriptor mBlockFd = null;
     FileDescriptor mInterruptFd = null;
     final Queue<byte[]> deviceWrites = new LinkedList<>();
-
-    /**
-     * Number of iterations since we last cleared the pcap4j cache
-     */
-    private int pcap4jFactoryClearCacheCounter = 0;
 
     public UdpProvider(ParcelFileDescriptor descriptor, DaedalusVpnService service) {
         super(descriptor, service);
@@ -148,31 +141,10 @@ public class UdpProvider extends Provider {
                     Log.d(TAG, "Read from device");
                     readPacketFromDevice(inputStream, packet);
                 }
-
-                checkCache();
                 service.providerLoopCallback();
             }
         } catch (Exception e) {
             Logger.logException(e);
-        }
-    }
-
-    void checkCache() {
-        // pcap4j has some sort of properties cache in the packet factory. This cache leaks, so
-        // we need to clean it up.
-        if (++pcap4jFactoryClearCacheCounter % 1024 == 0) {
-            try {
-                PacketFactoryPropertiesLoader l = PacketFactoryPropertiesLoader.getInstance();
-                Field field = l.getClass().getDeclaredField("loader");
-                field.setAccessible(true);
-                PropertiesLoader loader = (PropertiesLoader) field.get(l);
-                Log.d(TAG, "Cleaning cache");
-                loader.clearCache();
-            } catch (NoSuchFieldException e) {
-                Log.e(TAG, "Cannot find declared loader field", e);
-            } catch (IllegalAccessException e) {
-                Log.e(TAG, "Cannot get declared loader field", e);
-            }
         }
     }
 
@@ -245,12 +217,13 @@ public class UdpProvider extends Provider {
      * @param responsePayload The payload of the response
      */
     void handleDnsResponse(IpPacket requestPacket, byte[] responsePayload) {
-        /*try {
-            DNSMessage message = new DNSMessage(responsePayload);
-            Logger.info(message.toString());
-        } catch (IOException e) {
-            Logger.logException(e);
-        }*/
+        if (Daedalus.getPrefs().getBoolean("settings_debug_output", false)) {
+            try {
+                Logger.debug(new DNSMessage(responsePayload).toString());
+            } catch (IOException e) {
+                Logger.logException(e);
+            }
+        }
         UdpPacket udpOutPacket = (UdpPacket) requestPacket.getPayload();
         UdpPacket.Builder payLoadBuilder = new UdpPacket.Builder(udpOutPacket)
                 .srcPort(udpOutPacket.getHeader().getDstPort())
@@ -337,6 +310,9 @@ public class UdpProvider extends Provider {
         DNSMessage dnsMsg;
         try {
             dnsMsg = new DNSMessage(dnsRawData);
+            if (Daedalus.getPrefs().getBoolean("settings_debug_output", false)) {
+                Logger.debug(dnsMsg.toString());
+            }
         } catch (IOException e) {
             Log.i(TAG, "handleDnsRequest: Discarding non-DNS or invalid packet", e);
             return;
@@ -351,20 +327,17 @@ public class UdpProvider extends Provider {
             String response = RuleResolver.resolve(dnsQueryName, dnsMsg.getQuestion().type);
             if (response != null && dnsMsg.getQuestion().type == Record.TYPE.A) {
                 Logger.info("Provider: Resolved " + dnsQueryName + "  Local resolver response: " + response);
-                DNSMessage.Builder builder = dnsMsg.asBuilder();
-                int[] ip = new int[4];
-                byte i = 0;
-                for (String block : response.split("\\.")) {
-                    ip[i] = Integer.parseInt(block);
-                    i++;
-                }
-                builder.addAnswer(new Record<>(dnsQueryName, Record.TYPE.A, 1, 64, new A(ip[0], ip[1], ip[2], ip[3])));
+                DNSMessage.Builder builder = dnsMsg.asBuilder()
+                        .setQrFlag(true)
+                        .addAnswer(new Record<>(dnsQueryName, Record.TYPE.A, 1, 64,
+                                new A(Inet4Address.getByName(response).getAddress())));
                 handleDnsResponse(parsedPacket, builder.build().toArray());
             } else if (response != null && dnsMsg.getQuestion().type == Record.TYPE.AAAA) {
                 Logger.info("Provider: Resolved " + dnsQueryName + "  Local resolver response: " + response);
-                DNSMessage.Builder builder = dnsMsg.asBuilder();
-                builder.addAnswer(new Record<>(dnsQueryName, Record.TYPE.AAAA, 1, 64,
-                        new AAAA(Inet6Address.getByName(response).getAddress())));
+                DNSMessage.Builder builder = dnsMsg.asBuilder()
+                        .setQrFlag(true)
+                        .addAnswer(new Record<>(dnsQueryName, Record.TYPE.AAAA, 1, 64,
+                                new AAAA(Inet6Address.getByName(response).getAddress())));
                 handleDnsResponse(parsedPacket, builder.build().toArray());
             } else {
                 Logger.info("Provider: Resolving " + dnsQueryName + " Type: " + dnsMsg.getQuestion().type.name() + " Sending to " + destAddr);

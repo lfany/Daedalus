@@ -55,7 +55,7 @@ public class Daedalus extends Application {
 
     public static final List<DNSServer> DNS_SERVERS = new ArrayList<DNSServer>() {{
         add(new DNSServer("119.23.248.241", R.string.server_fundns_south_china));
-        add(new DNSServer("116.196.87.241", R.string.server_fundns_north_china));
+        add(new DNSServer("116.196.109.54", R.string.server_fundns_north_china));
         add(new DNSServer("115.159.220.214", R.string.server_puredns_east_china));
         add(new DNSServer("123.207.137.88", R.string.server_puredns_north_china));
         add(new DNSServer("115.159.146.99", R.string.server_aixyz_east_china));
@@ -65,10 +65,10 @@ public class Daedalus extends Application {
 
     public static final List<Rule> RULES = new ArrayList<Rule>() {{
         //Build-in Hosts rule providers
-        add(new Rule("racaljk/hosts", "racaljk.hosts", Rule.TYPE_HOSTS,
-                "https://coding.net/u/scaffrey/p/hosts/git/raw/master/hosts", false));
+        add(new Rule("googlehosts/hosts", "googlehosts.hosts", Rule.TYPE_HOSTS,
+                "https://raw.githubusercontent.com/googlehosts/hosts/master/hosts-files/hosts", false));
         add(new Rule("sy618/hosts", "sy618.hosts", Rule.TYPE_HOSTS,
-                "https://raw.githubusercontent.com/sy618/hosts/master/ADFQ", false));
+                "https://raw.githubusercontent.com/sy618/hosts/master/FQ", false));
         add(new Rule("vokins/yhosts", "vokins.hosts", Rule.TYPE_HOSTS,
                 "https://raw.githubusercontent.com/vokins/yhosts/master/hosts", false));
         add(new Rule("lengers/connector", "connector.hosts", Rule.TYPE_HOSTS,
@@ -76,8 +76,8 @@ public class Daedalus extends Application {
         add(new Rule("wangchunming/2017hosts", "2017.hosts", Rule.TYPE_HOSTS,
                 "https://raw.githubusercontent.com/wangchunming/2017hosts/master/hosts-pc", false));
         //Build-in DNSMasq rule providers
-        add(new Rule("sy618/hosts/dnsad", "dnsad.dnsmasq", Rule.TYPE_DNAMASQ,
-                "https://raw.githubusercontent.com/sy618/hosts/master/dnsmasq/dnsad", false));
+        add(new Rule("vokins/yhosts/union", "union.dnsmasq", Rule.TYPE_DNAMASQ,
+                "https://raw.githubusercontent.com/vokins/yhosts/master/dnsmasq/union.conf", false));
         add(new Rule("sy618/hosts/dnsfq", "dnsfq.dnsmasq", Rule.TYPE_DNAMASQ,
                 "https://raw.githubusercontent.com/sy618/hosts/master/dnsmasq/dnsfq", false));
     }};
@@ -114,7 +114,7 @@ public class Daedalus extends Application {
         initData();
     }
 
-    private void initDirectory(String dir){
+    private void initDirectory(String dir) {
         File directory = new File(dir);
         if (!directory.isDirectory()) {
             Logger.warning(dir + " is not a directory. Delete result: " + String.valueOf(directory.delete()));

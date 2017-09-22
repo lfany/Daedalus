@@ -159,11 +159,13 @@ public class DNSTestFragment extends ToolbarFragment {
 
                 boolean succ = false;
                 try {
-                    DNSMessage.Builder message = DNSMessage.builder();
-                    message.addQuestion(new Question(domain, type));
-                    message.setId((new Random()).nextInt());
-                    message.setRecursionDesired(true);
-                    message.getEdnsBuilder().setUdpPayloadSize(1024).setDnssecOk(false);
+                    DNSMessage.Builder message = DNSMessage.builder()
+                            .addQuestion(new Question(domain, type))
+                            .setId((new Random()).nextInt())
+                            .setRecursionDesired(true)
+                            .setOpcode(DNSMessage.OPCODE.QUERY)
+                            .setResponseCode(DNSMessage.RESPONSE_CODE.NO_ERROR)
+                            .setQrFlag(false);
 
                     long startTime = System.currentTimeMillis();
                     DNSMessage response = dnsQuery.query(message.build(), InetAddress.getByName(server.getAddress()), server.getPort());
@@ -267,6 +269,10 @@ public class DNSTestFragment extends ToolbarFragment {
 
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
+
+            if (startTestBtn == null) {
+                return;
+            }
 
             switch (msg.what) {
                 case MSG_DISPLAY_STATUS:

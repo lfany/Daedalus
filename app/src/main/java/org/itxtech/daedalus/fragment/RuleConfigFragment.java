@@ -59,6 +59,7 @@ public class RuleConfigFragment extends ConfigFragment {
         intent = null;
         mHandler.shutdown();
         mHandler = null;
+        Daedalus.configurations.save();
     }
 
     private void stopThread() {
@@ -407,7 +408,9 @@ public class RuleConfigFragment extends ConfigFragment {
                         Logger.logException(e);
                     }
 
-                    Snackbar.make(view, R.string.notice_downloaded, Snackbar.LENGTH_SHORT).show();
+                    if (view != null) {
+                        Snackbar.make(view, R.string.notice_downloaded, Snackbar.LENGTH_SHORT).show();
+                    }
                     break;
             }
         }
